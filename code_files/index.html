@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reinforcement Learning - Volume Adjustment</title>
+</head>
+<body>
+    <h1>Reinforcement Learning - Volume Adjustment</h1>
+    
+    <form id="adjust-form">
+        <label for="volume_adjustment">Volume Adjustment:</label>
+        <input type="number" id="volume_adjustment" name="volume_adjustment" step="0.1" value="0.1">
+        <br><br>
+        <button type="button" onclick="adjustParameters()">Adjust Volumes</button>
+    </form>
+
+    <div id="result-message"></div>
+
+    <script>
+        function adjustParameters() {
+            let volumeAdjustment = document.getElementById('volume_adjustment').value;
+
+            fetch('/adjust', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ volume_adjustment: volumeAdjustment })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result-message').innerHTML = data.message;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result-message').innerHTML = 'Error adjusting parameters.';
+            });
+        }
+    </script>
+</body>
+</html>
