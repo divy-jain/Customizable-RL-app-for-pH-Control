@@ -334,50 +334,20 @@ def modified_control_loop(agent, initial_state, data_df, desired_pH, control_key
 
     return results
 
-def get_file_content_as_bytes(file_path):
-    with open(file_path, "rb") as file:
-        return file.read()
 
 def main():
-    st.title("pH Control Simulation with Customizable RL divi bo")
+    st.title("pH Control Simulation with Customizable RL")
 
-    # Directory where default files are stored
-    default_files_dir = 'default_files'
-    
-    # Dictionary of default file names and descriptions
-    default_files = {
-        'ph_model.pkl': 'Default pH prediction model',
-        'gbr_model.pkl': 'Default GBR model',
-        'state_scaler.pkl': 'Default state scaler',
-        'poly_scaler.pkl': 'Default polynomial scaler'
-    }
-
-    # File upload sections
+    # Model selection
     st.header("Model and Scaler Upload")
     col1, col2 = st.columns(2)
-
     with col1:
-        # Display default files and allow users to download them
-        st.subheader("Download Default Files")
-        for file_name, description in default_files.items():
-            file_path = os.path.join(default_files_dir, file_name)
-            if os.path.exists(file_path):
-                st.download_button(
-                    label=f"Download {description}",
-                    data=get_file_content_as_bytes(file_path),
-                    file_name=file_name,
-                    mime="application/octet-stream"
-                )
-    
-        st.subheader("Upload Custom Files")
         ph_model_file = st.file_uploader("Upload pH prediction model (PKL file)", type="pkl")
         gbr_model_file = st.file_uploader("Upload GBR model (PKL file)", type="pkl")
-    
     with col2:
         scaler_file = st.file_uploader("Upload state scaler (PKL file)", type="pkl")
         poly_scaler_file = st.file_uploader("Upload poly scaler (PKL file)", type="pkl")
 
-    # Processing uploaded files
     if ph_model_file and gbr_model_file and scaler_file and poly_scaler_file:
         # Convert UploadedFile to a byte stream
         ph_model_bytes = io.BytesIO(ph_model_file.read())
@@ -397,38 +367,6 @@ def main():
     else:
         st.warning("Please upload all models and scalers to continue.")
         return
-# def main():
-#     st.title("pH Control Simulation with Customizable RL ppee")
-
-#     # Model selection
-#     st.header("Model and Scaler Upload")
-#     col1, col2 = st.columns(2)
-#     with col1:
-#         ph_model_file = st.file_uploader("Upload pH prediction model (PKL file)", type="pkl")
-#         gbr_model_file = st.file_uploader("Upload GBR model (PKL file)", type="pkl")
-#     with col2:
-#         scaler_file = st.file_uploader("Upload state scaler (PKL file)", type="pkl")
-#         poly_scaler_file = st.file_uploader("Upload poly scaler (PKL file)", type="pkl")
-
-#     if ph_model_file and gbr_model_file and scaler_file and poly_scaler_file:
-#         # Convert UploadedFile to a byte stream
-#         ph_model_bytes = io.BytesIO(ph_model_file.read())
-#         ph_model = pickle.load(ph_model_bytes)
-
-#         gbr_model_bytes = io.BytesIO(gbr_model_file.read())
-#         poly_gbr_model = pickle.load(gbr_model_bytes)
-
-#         state_scaler_bytes = io.BytesIO(scaler_file.read())
-#         state_scaler = pickle.load(state_scaler_bytes)
-
-#         poly_gbr_scaler_bytes = io.BytesIO(poly_scaler_file.read())
-#         poly_gbr_scaler = pickle.load(poly_gbr_scaler_bytes)
-
-#         poly = PolynomialFeatures(degree=2, include_bias=False)
-#         st.success("Models and scalers loaded successfully!")
-#     else:
-#         st.warning("Please upload all models and scalers to continue.")
-#         return
 
     # Data upload
     st.header("Data Upload")
