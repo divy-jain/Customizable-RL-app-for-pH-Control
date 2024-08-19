@@ -12,6 +12,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import PolynomialFeatures
 import random
 import io
+import time  # Import the time module
+
 
 
 # Define initial state and configuration parameters
@@ -287,6 +289,7 @@ def calculate_reward(online_after, desired_pH, online_before, offline_after, off
     return total_reward
 
 def control_loop(agent, initial_state, data_df, desired_pH):
+    start_time = time.time()
     time_step_interval = 4
     timesteps = 0
     batch_size = 10
@@ -312,7 +315,7 @@ def control_loop(agent, initial_state, data_df, desired_pH):
     total_steps = len(data_df.iloc[0:1200])
 
 
-    for index, row in data_df.iloc[27879:33340].iterrows():
+    for index, row in data_df.iloc[38835:44323].iterrows():
             print(f"=== Time Step {index + 1}/{total_steps} ===")
             current_state = row.to_dict()
             results['actual_pH_list'].append(current_state['pH'])
@@ -421,13 +424,15 @@ def control_loop(agent, initial_state, data_df, desired_pH):
 
             timesteps += 1
 
-    calculate_statistics(results, desired_pH, tolerance)
+    end_time = time.time()  # End timing
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    calculate_statistics(results, desired_pH, tolerance, elapsed_time)
     export_results_to_csv(results)
     return results
     
 
 
-def calculate_statistics(results, desired_pH, tolerance):
+def calculate_statistics(results, desired_pH, tolerance, time_elapsed):
     actual_pH = np.array(results['actual_pH_list'])
     predicted_pH = np.array(results['predicted_pH_list'])
     predicted_online_pH = np.array(results['predicted_online_pH'])
@@ -455,6 +460,7 @@ def calculate_statistics(results, desired_pH, tolerance):
         'mean_reward': np.mean(rewards),
         'median_reward': np.median(rewards),
         'std_reward': np.std(rewards),
+        'time_elapsed': time_elapsed
     }
 
     # MSE and MAE for actual pH
