@@ -273,7 +273,7 @@ def calculate_reward(online_after, desired_pH, online_before, offline_after, off
         reward = -100 - abs(online_delta) * 1000
 
 
-    # component based on overall proximity to desired offline pH
+    # Add a component based on overall proximity to desired offline pH
     distance_penalty = -abs(online_after - desired_pH) * 50
 
 
@@ -285,9 +285,6 @@ def calculate_reward(online_after, desired_pH, online_before, offline_after, off
 
 
     return total_reward
-
-
-
 
 def control_loop(agent, initial_state, data_df, desired_pH):
     time_step_interval = 4
@@ -315,7 +312,7 @@ def control_loop(agent, initial_state, data_df, desired_pH):
     total_steps = len(data_df.iloc[0:1200])
 
 
-    for index, row in data_df.iloc[5495:10689].iterrows():
+    for index, row in data_df.iloc[27879:33340].iterrows():
             print(f"=== Time Step {index + 1}/{total_steps} ===")
             current_state = row.to_dict()
             results['actual_pH_list'].append(current_state['pH'])
@@ -497,7 +494,7 @@ def plot_results(results):
     ax1.plot(results['time_step_list'], results['predicted_pH_list'], marker='o', linestyle='-', color='b', label='Predicted pH')
     ax1.plot(results['time_step_list'], results['actual_pH_list'], marker='x', linestyle='--', color='g', label='Actual pH')
     ax1.plot(results['time_step_list'], results['predicted_online_pH'], marker='^', linestyle=':', color='r', label='Predicted Online pH')
-    ax1.set_xlabel('Time Step')
+    ax1.set_xlabel('Time in s')
     ax1.set_ylabel('pH')
     ax1.legend(loc='upper left')
     ax1.set_title('pH over Time')
@@ -505,7 +502,7 @@ def plot_results(results):
 
     ax2.plot(results['time_step_list'], results['fallvol'], marker='o', linestyle='-', color='c', label='Fällungslauge Volume')
     ax2.plot(results['time_step_list'], results['metalvol'], marker='s', linestyle='-', color='y', label='Metallsulfatlösung Volume')
-    ax2.set_xlabel('Time Step')
+    ax2.set_xlabel('Time in s')
     ax2.set_ylabel('Volume')
     ax2.legend()
     ax2.set_title('Reagent Volumes over Time')
