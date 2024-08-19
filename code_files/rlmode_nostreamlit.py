@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import csv
 from collections import deque, namedtuple
 from keras.models import load_model
 from keras.optimizers import Adam
@@ -318,7 +319,7 @@ def control_loop(agent, initial_state, data_df, desired_pH):
     total_steps = len(data_df.iloc[0:1200])
 
 
-    for index, row in data_df.iloc[22500:27800].iterrows():
+    for index, row in data_df.iloc[:5490].iterrows():
             print(f"=== Time Step {index + 1}/{total_steps} ===")
             current_state = row.to_dict()
             results['actual_pH_list'].append(current_state['pH'])
@@ -427,10 +428,13 @@ def control_loop(agent, initial_state, data_df, desired_pH):
 
             timesteps += 1
 
-    calculate_statistics(results)
+    calculate_statistics(results, desired_pH, tolerance)
+    export_results_to_csv(results)
     return results
+    
 
-def calculate_statistics(results):
+
+def calculate_statistics(results, desired_pH, tolerance):
     actual_pH = np.array(results['actual_pH_list'])
     predicted_pH = np.array(results['predicted_pH_list'])
     predicted_online_pH = np.array(results['predicted_online_pH'])
@@ -438,57 +442,57 @@ def calculate_statistics(results):
     metal_vol = np.array(results['metalvol'])
     rewards = np.array(results['reward_list'])
 
-    mean_actual_pH = np.mean(actual_pH)
-    median_actual_pH = np.median(actual_pH)
-    std_actual_pH = np.std(actual_pH)
-
-    mean_online_pH = np.mean(predicted_online_pH)
-    median_online_pH = np.median(predicted_online_pH)
-    std_online_pH = np.std(predicted_online_pH)
-
-    mean_predicted_pH = np.mean(predicted_pH)
-    median_predicted_pH = np.median(predicted_pH)
-    std_predicted_pH = np.std(predicted_pH)
-
-    mae = np.mean(np.abs(predicted_online_pH - actual_pH))
-    rmse = np.sqrt(np.mean((predicted_online_pH - actual_pH) ** 2))
-
-    mean_fall_vol = np.mean(fall_vol)
-    median_fall_vol = np.median(fall_vol)
-    std_fall_vol = np.std(fall_vol)
-
-    mean_metal_vol = np.mean(metal_vol)
-    median_metal_vol = np.median(metal_vol)
-    std_metal_vol = np.std(metal_vol)
-
-    mean_reward = np.mean(rewards)
-    median_reward = np.median(rewards)
-    std_reward = np.std(rewards)
-
+    # Basic statistics for pH
     stats = {
-        'mean_actual_pH': mean_actual_pH,
-        'median_actual_pH': median_actual_pH,
-        'std_actual_pH': std_actual_pH,
-        'mean_predicted_pH': mean_predicted_pH,
-        'median_predicted_pH': median_predicted_pH,
-        'std_predicted_pH': std_predicted_pH,
-        'mean_online_pH': mean_online_pH,
-        'median_onlinepH': median_online_pH,
-        'std_online_pH': std_online_pH,
-        'mae': mae,
-        'rmse': rmse,
-        'mean_fall_vol': mean_fall_vol,
-        'median_fall_vol': median_fall_vol,
-        'std_fall_vol': std_fall_vol,
-        'mean_metal_vol': mean_metal_vol,
-        'median_metal_vol': median_metal_vol,
-        'std_metal_vol': std_metal_vol,
-        'mean_reward': mean_reward,
-        'median_reward': median_reward,
-        'std_reward': std_reward
+        'mean_actual_pH': np.mean(actual_pH),
+        'median_actual_pH': np.median(actual_pH),
+        'std_actual_pH': np.std(actual_pH),
+        'mean_predicted_pH': np.mean(predicted_pH),
+        'median_predicted_pH': np.median(predicted_pH),
+        'std_predicted_pH': np.std(predicted_pH),
+        'mean_online_pH': np.mean(predicted_online_pH),
+        'median_online_pH': np.median(predicted_online_pH),
+        'std_online_pH': np.std(predicted_online_pH),
+        'mean_fall_vol': np.mean(fall_vol),
+        'median_fall_vol': np.median(fall_vol),
+        'std_fall_vol': np.std(fall_vol),
+        'mean_metal_vol': np.mean(metal_vol),
+        'median_metal_vol': np.median(metal_vol),
+        'std_metal_vol': np.std(metal_vol),
+        'mean_reward': np.mean(rewards),
+        'median_reward': np.median(rewards),
+        'std_reward': np.std(rewards),
     }
 
+    # MSE and MAE for actual pH
+    stats['mse_actual_pH'] = np.mean((actual_pH - desired_pH) ** 2)
+    stats['mae_actual_pH'] = np.mean(np.abs(actual_pH - desired_pH))
+
+    # MSE and MAE for online pH
+    stats['mse_online_pH'] = np.mean((predicted_online_pH - desired_pH) ** 2)
+    stats['mae_online_pH'] = np.mean(np.abs(predicted_online_pH - desired_pH))
+
+    # Percentage of time within desired range for actual pH
+    within_range_actual = np.sum(np.abs(actual_pH - desired_pH) <= tolerance) / len(actual_pH) * 100
+    stats['percent_time_within_range_actual'] = within_range_actual
+
+    # Percentage of time within desired range for online pH
+    within_range_online = np.sum(np.abs(predicted_online_pH - desired_pH) <= tolerance) / len(predicted_online_pH) * 100
+    stats['percent_time_within_range_online'] = within_range_online
+
     print(stats)
+    return stats
+
+def export_results_to_csv(results, filename='control_loop_results.csv'):
+    # Export each control loop iteration's results to CSV
+    with open(filename, 'w', newline='') as csvfile:
+        fieldnames = list(results.keys())
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for i in range(len(results['actual_pH_list'])):
+            row = {key: results[key][i] for key in fieldnames}
+            writer.writerow(row)
 
 def plot_results(results):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 12))
