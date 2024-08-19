@@ -273,16 +273,12 @@ def calculate_reward(online_after, desired_pH, online_before, offline_after, off
         reward = -100 - abs(online_delta) * 1000
 
 
-    # Add a component based on overall proximity to desired offline pH
+    # component based on overall proximity to desired offline pH
     distance_penalty = -abs(online_after - desired_pH) * 50
 
 
     # Bonus for being very close to desired pH
     bonus = 100 if abs(online_after - desired_pH) < 0.1 else 0
-
-
-    # Penalty for large disagreement between online and offline predictions
-    # prediction_agreement_penalty = -abs(online_delta - offline_delta) * 200
 
 
     total_reward = reward + distance_penalty + bonus
@@ -319,7 +315,7 @@ def control_loop(agent, initial_state, data_df, desired_pH):
     total_steps = len(data_df.iloc[0:1200])
 
 
-    for index, row in data_df.iloc[:5490].iterrows():
+    for index, row in data_df.iloc[5495:10689].iterrows():
             print(f"=== Time Step {index + 1}/{total_steps} ===")
             current_state = row.to_dict()
             results['actual_pH_list'].append(current_state['pH'])
