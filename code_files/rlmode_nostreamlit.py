@@ -315,7 +315,7 @@ def control_loop(agent, initial_state, data_df, desired_pH):
     total_steps = len(data_df.iloc[0:1200])
 
 
-    for index, row in data_df.iloc[38835:44323].iterrows():
+    for index, row in data_df.iloc[60803:66292].iterrows():
             print(f"=== Time Step {index + 1}/{total_steps} ===")
             current_state = row.to_dict()
             results['actual_pH_list'].append(current_state['pH'])
@@ -522,7 +522,7 @@ def main():
     print("pH Control Simulation")
 
 
-    data_df = pd.read_excel("C:\\Users\\IPAT2024\\Desktop\\Divyansh\\ReactorData\\Control-pH-Model_Data-main.xlsx")
+    data_df = pd.read_excel(r"C:\Users\divya\OneDrive\Desktop\iPAT\Customizable-RL-app-for-pH-Control\ReactorData\Control-pH-Model_Data-main.xlsx")
     print("File successfully uploaded and read!")
 
 
